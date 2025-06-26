@@ -1,0 +1,31 @@
+# use official python 3.10 image as the base image
+FROM python:3.10-slim
+
+# set working directory
+WORKDIR /workspace
+
+# install dependencies (ubuntu packages)
+RUN apt-get update && apt-get install -y \
+    git wget unzip libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    && apt-get clean
+
+# clone YOLOv7 repo
+RUN git clone https://github.com/WongKinYiu/yolov7.git /workspace
+
+# install python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install jupyter
+
+# set environment variables for Jupyter
+## "PYTHONUNBUFFERD=1": disable output buffering, so output might not be delayed or missing in logs > immediately shown in logs, easier to debug and monitor
+ENV JUPYTER_TOKEN=mysecret \
+    JUPYTER_PORT=8888 \
+    PYTHONUNBUFFERD=1
+
+# expose Jupyter port
+EXPOSE $JUPYTER_PORT
+
+# set default command: start Jupyter
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token='mysecret'"]

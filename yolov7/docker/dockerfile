@@ -1,0 +1,21 @@
+# use official python 3.10 image as the base image
+FROM python:3.10-slim
+
+# set working directory
+WORKDIR /workspace
+
+# install dependencies (ubuntu packages)
+RUN apt-get update && apt-get install -y \
+    git wget unzip libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    && apt-get clean
+
+# clone YOLOv7 repo
+RUN git clone https://github.com/WongKinYiu/yolov7.git /workspace
+
+# install python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# set default command
+CMD ["/bin/bash"]

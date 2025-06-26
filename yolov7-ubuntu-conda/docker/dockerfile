@@ -1,0 +1,46 @@
+# use official Ubuntu base image
+FROM ubuntu:22.04
+
+# avoid prompts durng apt installs
+ENV DEBIAN_FORNTEND=noninteractive
+
+# install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl git wget unzip libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    && apt-get clean
+
+# install miniconda
+ENV CONDA_DIR=/opt/conda
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh && \
+    bash /miniconda.sh -b -p $CONDA_DIR && \
+    rm /miniconda.sh
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# create conda environment
+COPY environment.yml /tmp/environment.yml
+RUN conda update -n base -c defaults conda && \
+    conda env create -f /tmp/environment.yml && \
+    conda clean -afy
+
+# activate environment by default
+ENV CONDA_DEFAULT_ENV=my
+ENV PATH=$CONDA_DIR/envs/my/bin:$PATH
+
+
+# set working directory
+WORKDIR /workspace
+
+# clone YOLOv7 repo
+RUN git clone https://github.com/WongKinYiu/yolov7.git /workspace
+
+# install python dependencies
+COPY requirements.txt /wiorkspace/requirements.txt
+
+# expose jupyter port
+EXPOSE 8888
+
+# environment variables
+ENV PYTHONUNBUFFERED=1 
+
+# set default command to launch jupyter
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token="]

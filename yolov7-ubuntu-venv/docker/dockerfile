@@ -1,0 +1,44 @@
+# use official Ubuntu base image
+FROM ubuntu:22.04
+
+# avoid prompts durng apt installs
+ENV DEBIAN_FORNTEND=noninteractive
+
+# install system dependencies
+RUN apt-get update && apt-get install -y \
+    software-properties-common build-essential curl git wget unzip \ 
+    libglib2.0-0 libsm6 libxext6 libxrender-dev \
+    python3.10 python3.10-venv python3.10-dev \
+    && apt-get clean
+
+# set working directory
+WORKDIR /workspace
+
+# create a python 3.10 virtual environment
+RUN python3.10 -m venv /my
+
+# activate the virtual environment and upgrade pip
+RUN /my/bin/pip install --upgrade pip
+
+# clone YOLOv7 repo
+RUN git clone https://github.com/WongKinYiu/yolov7.git /workspace
+
+# install python dependencies
+COPY requirements.txt /workspace/requirements.txt
+
+# install python dependencies inside virtual environment
+RUN /my/bin/pip install -r /workspace/requirements.txt
+
+# install jupyter notebooks
+RUN /my/bin/pip install jupyter
+
+# expose jupyter port
+EXPOSE 8888
+
+# environment variables
+ENV PATH="/my/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    JUPYTER_TOKEN=mysecret
+
+# set default command to launch jupyter
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=mysecret"]
