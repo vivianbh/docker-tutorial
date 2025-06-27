@@ -24,3 +24,9 @@
 - ubuntu 22.04
 - miniconda
 - yolov7
+
+#### ubuntu-venv-rs
+- ubuntu 22.04
+- python3.10 venv
+- realsense
+(Auto-check status in shell scrpit)
