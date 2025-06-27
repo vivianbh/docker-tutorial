@@ -28,5 +28,5 @@
 #### ubuntu-venv-rs
 - ubuntu 22.04
 - python3.10 venv
-- realsense
+- realsense \
 (Auto-check status in shell scrpit)
